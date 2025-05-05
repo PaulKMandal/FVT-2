@@ -1,0 +1,42 @@
+task: classification              # classification | detection
+model: resnet18                   # resnet18 | vit | frcnn | detr
+dataset: cifar10                  # HF name or local path
+n_federates: 2                    # default number of clients
+simulation: true                  # single-process fake federation
+rounds: 1                         # number of communication rounds
+aggregation: average              # average | weighted
+local_epochs: 1                   # number of local epochs before aggregation
+lora: false
+lora_args:
+  rank: 8
+  alpha: 16
+
+hyperparams:
+  classification:
+    resnet18:
+      learning_rate: 5e-5
+      weight_decay: 0.0
+      batch_size: 16
+      num_train_epochs: 3
+    vit:
+      learning_rate: 2e-5
+      weight_decay: 0.0
+      batch_size: 16
+      num_train_epochs: 3
+  detection:
+    frcnn:
+      learning_rate: 5e-5
+      weight_decay: 0.0
+      batch_size: 16
+      num_train_epochs: 3
+    detr:
+      learning_rate: 1e-4
+      weight_decay: 1e-4
+      batch_size: 16
+      num_train_epochs: 3
+
+evaluation:
+  classification_metrics: [accuracy, precision, recall]
+  detection_metrics: [mAP, IoU]
+
+output: results.yaml              # where to write final model size, timing, metrics
