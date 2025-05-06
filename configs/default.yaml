@@ -1,12 +1,13 @@
 task: classification              # classification | detection
-model: resnet18                   # resnet18 | vit | frcnn | detr
+model: vit                   # resnet18 | vit | frcnn | detr
 dataset: cifar10                  # HF name or local path
 n_federates: 2                    # default number of clients
 simulation: true                  # single-process fake federation
 rounds: 1                         # number of communication rounds
 aggregation: average              # average | weighted
 local_epochs: 1                   # number of local epochs before aggregation
-lora: false
+keep_in_memory: false              # if true, uses map(..., keep_in_memory=True) to avoid disk writes
+lora: true
 lora_args:
   rank: 8
   alpha: 16

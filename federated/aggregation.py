@@ -1,26 +1,18 @@
 import torch
 
 def aggregate_weights(states, method='average', sizes=None, lora=False):
-    """Aggregate list of state_dicts. If lora=True, only aggregate LoRA adapter params; base stays from first client."""
     aggregated = {}
-    keys = states[0].keys()
-    def is_adapter_key(k):
-        return 'lora_' in k or '.lora' in k
-
-    for k in keys:
-        if lora:
-            if is_adapter_key(k):
-                if method == 'average' or sizes is None:
-                    aggregated[k] = torch.stack([s[k] for s in states], dim=0).mean(dim=0)
-                else:
-                    total = sum(sizes)
-                    aggregated[k] = sum(states[i][k] * (sizes[i] / total) for i in range(len(states)))
-            else:
-                aggregated[k] = states[0][k]
+    total = sum(sizes) if sizes else None
+    for k in states[0].keys():
+        vals = [s[k] for s in states]
+        first = vals[0]
+        if not torch.is_floating_point(first) or (lora and '.lora' not in k and 'lora_' not in k):
+            aggregated[k] = first
+            continue
+        stacked = torch.stack(vals, 0)
+        if method == 'average' or not sizes:
+            aggregated[k] = stacked.mean(0)
         else:
-            if method == 'average' or sizes is None:
-                aggregated[k] = torch.stack([s[k] for s in states], dim=0).mean(dim=0)
-            else:
-                total = sum(sizes)
-                aggregated[k] = sum(states[i][k] * (sizes[i] / total) for i in range(len(states)))
+            agg = sum(vals[i] * (sizes[i]/total) for i in range(len(vals)))
+            aggregated[k] = agg
     return aggregated
